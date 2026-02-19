@@ -55,7 +55,7 @@ destroy variables_file:
     fi
     terraform destroy -auto-approve -var-file="${variables_file}" || true
     echo "Forcing model cleanup..."
-    juju destroy-model --no-prompt --destroy-storage airflow-test || true
+    juju destroy-model --no-prompt --destroy-storage airflow-test --force || true
 
     rm "${variables_file}"
 
@@ -71,5 +71,7 @@ test:
     just validate_test_tfvars "terraform_test.tfvars"
 
     just apply "terraform_test.tfvars"
-
-    juju wait-for model airflow-test --timeout=600s || true
+    juju wait-for model airflow-test \
+        --query='forEach(applications, app => app.status == "active")' \
+        --timeout=600s || true
+    # juju wait-for model airflow-test --timeout=600s || true
