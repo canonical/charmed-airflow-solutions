@@ -3,6 +3,7 @@ variable "model_uuid" {
   type        = string
 }
 
+
 variable "airflow_api_server" {
   description = "Inputs for airflow-api-server-k8s charm module."
   type = object({
