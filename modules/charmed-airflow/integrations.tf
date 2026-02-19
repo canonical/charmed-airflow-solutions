@@ -1,4 +1,13 @@
+resource "null_resource" "wait_for_postgresql" {
+  depends_on = [module.postgresql]
+
+  provisioner "local-exec" {
+    command = "juju wait-for model $(juju show-model ${var.model_uuid} --format=json | jq -r '.[keys[0]].name') --timeout=20m --query=\"apps['${var.postgresql.app_name}'].status == 'active'\""
+  }
+}
+
 resource "juju_integration" "coordinator_to_postgresql" {
+  depends_on = [null_resource.wait_for_postgresql]
   model_uuid = var.model_uuid
   application {
     name     = var.airflow_coordinator.app_name
