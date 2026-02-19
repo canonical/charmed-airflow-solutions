@@ -13,5 +13,5 @@ jobs:
     name: PR Terraform checks
     uses: canonical/workflows-team/.github/workflows/terraform.yaml@main
     with:
-      module-directory: ./modules/charmed-temporal
+      module-directory: ./modules/charmed-airflow
       timeout-minutes: 40
