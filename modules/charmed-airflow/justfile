@@ -62,8 +62,4 @@ test:
 
     just apply "terraform_test.tfvars"
 
-    juju wait-for model airflow-test \
-        --query='forEach(applications, app => app.status == "active")' \
-        --timeout=600s
-        
-    juju debug-log -m airflow-test --lines 1000
+    juju wait-for model airflow-test --timeout=600s
