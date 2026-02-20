@@ -10,13 +10,8 @@ on:
 
 jobs:
   pull-request-terraform-checks:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Run tmate
-      uses: mxschmitt/action-tmate@v3
-
-    - name: PR Terraform checks
-      uses: canonical/workflows-team/.github/workflows/terraform.yaml@main
-      with:
-        module-directory: ./modules/charmed-airflow
-        timeout-minutes: 40
+    name: PR Terraform checks
+    uses: canonical/workflows-team/.github/workflows/terraform.yaml@main
+    with:
+      module-directory: ./modules/charmed-airflow
+      timeout-minutes: 40
