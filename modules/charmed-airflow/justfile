@@ -1,21 +1,17 @@
-set export := true # Just variables are exported into environment variables
+set export := true
 
-# Default: show all recipes
 default:
     @just --list
 
-# Initialize terraform
 initialize:
     #!/usr/bin/bash
     if [ ! -d ".terraform" ]; then
         terraform init -backend=false
     fi
 
-# Destroy model if exists
 destroy-model:
     juju destroy-model --no-prompt --destroy-storage airflow-test || true
 
-# Add a fresh model
 add-model: (destroy-model)
     juju add-model airflow-test
 
@@ -30,23 +26,18 @@ validate_test_tfvars variables_file:
     fi
     echo "model_uuid = \"${MODEL_UUID}\"" > "${variables_file}"
 
-# Terraform fmt
 fmt: (initialize)
     terraform fmt -recursive
 
-# Terraform validate
 validate: (initialize)
     terraform validate
 
-# Lint
 lint:
     tflint
 
-# Apply with variables file
 apply variables_file: (initialize)
     terraform apply -auto-approve -var-file="${variables_file}"
 
-# Destroy with variables file
 destroy variables_file:
     #!/usr/bin/bash
     set -euxo pipefail
@@ -59,7 +50,6 @@ destroy variables_file:
 
     rm "${variables_file}"
 
-# Full test (create model, apply, wait, cleanup)
 test:
     #!/usr/bin/bash
     set -euxo pipefail
@@ -71,7 +61,7 @@ test:
     just validate_test_tfvars "terraform_test.tfvars"
 
     just apply "terraform_test.tfvars"
+
     juju wait-for model airflow-test \
         --query='forEach(applications, app => app.status == "active")' \
-        --timeout=600s || true
-    # juju wait-for model airflow-test --timeout=600s || true
+        --timeout=1200s
