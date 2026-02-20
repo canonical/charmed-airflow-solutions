@@ -64,10 +64,6 @@ test:
 
     juju wait-for model airflow-test \
         --query='forEach(applications, app => app.status == "active")' \
-        --timeout=1100s || echo __EXIT_CODE=$?
-    
-    if [ "${__EXIT_CODE:-0}" -ne 0 ]; then
-        echo "Model did not become active in time. Dumping logs..."
-        juju debug-log -m airflow-test --lines 1000
-        exit 1
-    fi
+        --timeout=600s
+        
+    juju debug-log -m airflow-test --lines 1000
