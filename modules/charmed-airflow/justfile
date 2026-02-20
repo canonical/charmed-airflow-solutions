@@ -64,4 +64,4 @@ test:
 
     juju wait-for model airflow-test \
         --query='forEach(applications, app => app.status == "active")' \
-        --timeout=1200s
+        --timeout=1100s
