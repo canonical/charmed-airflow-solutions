@@ -24,7 +24,7 @@ validate_test_tfvars variables_file:
     if ! juju show-model "${MODEL_UUID}" >/dev/null 2>&1; then
         exit 1
     fi
-    echo "model_uuid = \"${MODEL_UUID}\"" > "${variables_file}"
+    echo "model_uuid = \"${MODEL_UUID}\"" >> "${variables_file}"
 
 fmt: (initialize)
     terraform fmt -recursive
@@ -47,19 +47,21 @@ destroy variables_file:
     terraform destroy -auto-approve -var-file="${variables_file}" || true
     echo "Forcing model cleanup..."
     juju destroy-model --no-prompt --destroy-storage airflow-test --force || true
-
-    rm "${variables_file}"
+    
+    sed -i '/^model_uuid[[:space:]]*=/d' "${variables_file}"
 
 test:
     #!/usr/bin/bash
     set -euxo pipefail
 
-    trap 'just destroy "terraform_test.tfvars"' EXIT
+    trap 'just destroy "test/terraform_test.tfvars"' EXIT
 
     just add-model
 
-    just validate_test_tfvars "terraform_test.tfvars"
+    just validate_test_tfvars "test/terraform_test.tfvars"
 
-    just apply "terraform_test.tfvars"
+    just apply "test/terraform_test.tfvars"
 
-    juju wait-for model airflow-test --timeout=600s
+    juju wait-for model airflow-test \
+        --query='forEach(applications, app => app.status == "active")' \
+        --timeout=1200s

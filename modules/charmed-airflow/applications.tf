@@ -7,7 +7,10 @@ module "postgresql" {
   channel    = var.postgresql.channel
   base       = var.postgresql.base
   units      = var.postgresql.units
-  config     = var.postgresql.config
+  config = merge(
+    var.postgresql.config,
+    { profile = var.postgresql.profile }
+  )
 }
 
 module "airflow_coordinator" {
