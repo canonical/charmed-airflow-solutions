@@ -35,6 +35,46 @@ validate: (initialize)
 lint:
     tflint
 
+[private]
+ensure_kgoss:
+    #!/usr/bin/bash
+    set -euxo pipefail
+
+    mkdir -p .bin
+
+    if [ ! -x .bin/kgoss ]; then
+        curl -fsSL -o .bin/kgoss https://raw.githubusercontent.com/goss-org/goss/master/extras/kgoss/kgoss
+        chmod +x .bin/kgoss
+    fi
+
+    if [ ! -x .bin/goss ]; then
+        curl -fsSL -o .bin/goss https://github.com/goss-org/goss/releases/download/v0.4.9/goss-linux-amd64
+        chmod +x .bin/goss
+    fi
+
+[private]
+kgoss-checks: (ensure_kgoss)
+    #!/usr/bin/bash
+    set -euxo pipefail
+
+    GOSS_FILES_PATH="test" \
+    GOSS_PATH="$PWD/.bin/goss" \
+    GOSS_OPTS="--color" \
+    GOSS_WAIT_OPTS="-r 480s -s 2s" \
+    GOSS_KUBECTL_OPTS="--namespace=airflow-test" \
+    "$PWD/.bin/kgoss" run -i bitnami/kubectl:latest -p
+
+kgoss-checks-run: (ensure_kgoss)
+    #!/usr/bin/bash
+    set -euxo pipefail
+
+    GOSS_FILES_PATH="test" \
+    GOSS_PATH="$PWD/.bin/goss" \
+    GOSS_OPTS="--color" \
+    GOSS_WAIT_OPTS="-r 480s -s 2s" \
+    GOSS_KUBECTL_OPTS="--namespace=airflow-test " \
+    "$PWD/.bin/kgoss" edit -i bitnami/kubectl:latest -p
+
 apply variables_file: (initialize)
     terraform apply -auto-approve -var-file="${variables_file}"
 
@@ -65,3 +105,5 @@ test:
     juju wait-for model airflow-test \
         --query='forEach(applications, app => app.status == "active")' \
         --timeout=1200s
+
+    just kgoss-checks

@@ -99,6 +99,22 @@ Sample `terraform_test.tfvars`:
 model_uuid = "<model-uuid>"
 ```
 
+For module validation and smoke tests (including `kgoss` service/API/DB checks):
+
+```bash
+just test
+```
+
+`just test` uses [test/terraform_test.tfvars](test/terraform_test.tfvars), runs `kgoss` checks for:
+- Airflow API health endpoint (`http://airflow-api-server-endpoints.airflow-test.svc.cluster.local:8080/api/v2/monitor/health`)
+- Healthy statuses for `metadatabase`, `scheduler`, `triggerer`, and `dag_processor`
+- Scheduler DB connectivity using `airflow db check`
+- `airflow.cfg` existence at `${AIRFLOW_HOME}/airflow.cfg` in:
+	- `airflow-api-server-0`
+	- `airflow-dag-processor-0`
+	- `airflow-triggerer-0`
+	- `airflow-scheduler-0`
+
 ---
 
 ### Cleanup
