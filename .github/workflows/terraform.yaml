@@ -9,6 +9,17 @@ on:
   workflow_call:
 
 jobs:
+  install-deps:
+    name: Install dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          set -euxo pipefail
+          
+          mkdir -p "$PWD/.bin"
+          goss_base_url="https://github.com/goss-org/goss/releases/latest/download"
+          curl -L ${goss_base_url}/kgoss -o "$PWD/.bin/kgoss"
+          chmod +rx "$PWD/.bin/kgoss"
   pull-request-terraform-checks:
     name: PR Terraform checks
     uses: canonical/workflows-team/.github/workflows/terraform.yaml@main

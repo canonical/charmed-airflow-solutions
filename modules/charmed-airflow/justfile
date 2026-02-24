@@ -35,25 +35,10 @@ validate: (initialize)
 lint:
     tflint
 
-[private]
-ensure_kgoss:
-    #!/usr/bin/bash
-    set -euxo pipefail
 
-    mkdir -p .bin
-
-    if [ ! -x .bin/kgoss ]; then
-        curl -fsSL -o .bin/kgoss https://raw.githubusercontent.com/goss-org/goss/master/extras/kgoss/kgoss
-        chmod +x .bin/kgoss
-    fi
-
-    if [ ! -x .bin/goss ]; then
-        curl -fsSL -o .bin/goss https://github.com/goss-org/goss/releases/download/v0.4.9/goss-linux-amd64
-        chmod +x .bin/goss
-    fi
 
 [private]
-kgoss-checks: (ensure_kgoss)
+kgoss-checks:
     #!/usr/bin/bash
     set -euxo pipefail
 
@@ -64,7 +49,7 @@ kgoss-checks: (ensure_kgoss)
     GOSS_KUBECTL_OPTS="--namespace=airflow-test" \
     "$PWD/.bin/kgoss" run -i bitnami/kubectl:latest -p
 
-kgoss-checks-run: (ensure_kgoss)
+kgoss-checks-run:
     #!/usr/bin/bash
     set -euxo pipefail
 
