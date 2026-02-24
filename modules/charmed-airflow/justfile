@@ -41,8 +41,8 @@ lint:
 kgoss-checks:
     #!/usr/bin/bash
     set -euxo pipefail
-
-    GOSS_FILES_PATH="test" \
+    
+    env GOSS_FILES_PATH="test" \
     GOSS_PATH="/usr/local/bin/kgoss" \
     GOSS_OPTS="--color" \
     GOSS_WAIT_OPTS="-r 480s -s 2s" \
@@ -53,8 +53,8 @@ kgoss-checks:
 kgoss-checks-run:
     #!/usr/bin/bash
     set -euxo pipefail
-
-    GOSS_FILES_PATH="test" \
+    
+    env GOSS_FILES_PATH="test" \
     GOSS_PATH="/usr/local/bin/kgoss" \
     GOSS_OPTS="--color" \
     GOSS_WAIT_OPTS="-r 480s -s 2s" \
