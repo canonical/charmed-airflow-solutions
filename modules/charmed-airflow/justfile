@@ -43,11 +43,9 @@ kgoss-checks:
     set -euxo pipefail
     
     env GOSS_FILES_PATH="test" \
-    GOSS_PATH="/usr/local/bin/kgoss" \
     GOSS_OPTS="--color" \
     GOSS_WAIT_OPTS="-r 480s -s 2s" \
     GOSS_KUBECTL_OPTS="--namespace=airflow-test" \
-    GOSS_KUBECTL_BIN="$(which kubectl)" \
     kgoss run -i bitnami/kubectl:latest -p
 
 kgoss-checks-run:
@@ -55,11 +53,9 @@ kgoss-checks-run:
     set -euxo pipefail
     
     env GOSS_FILES_PATH="test" \
-    GOSS_PATH="/usr/local/bin/kgoss" \
     GOSS_OPTS="--color" \
     GOSS_WAIT_OPTS="-r 480s -s 2s" \
-    GOSS_KUBECTL_OPTS="--namespace=airflow-test " \
-    GOSS_KUBECTL_BIN="$(which kubectl)" \
+    GOSS_KUBECTL_OPTS="--namespace=airflow-test" \
     kgoss edit -i bitnami/kubectl:latest -p
 
 apply variables_file: (initialize)
