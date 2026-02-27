@@ -11,7 +11,7 @@ on:
 jobs:
   pull-request-terraform-checks:
     name: PR Terraform checks
-    uses: canonical/workflows-team/.github/workflows/terraform.yaml@ci/add-goss-installation
+    uses: canonical/workflows-team/.github/workflows/terraform.yaml@main
     with:
       module-directory: ./modules/charmed-airflow
       timeout-minutes: 40

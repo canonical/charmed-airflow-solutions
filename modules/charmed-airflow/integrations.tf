@@ -1,12 +1,25 @@
-resource "juju_integration" "coordinator_to_postgresql" {
+resource "juju_integration" "postgresql_pgbouncer" {
+  model_uuid = var.model_uuid
+
+  application {
+    name     = module.postgresql.application_name
+    endpoint = module.postgresql.provides.database
+  }
+  application {
+    name     = juju_application.pgbouncer.name
+    endpoint = "backend-database"
+  }
+}
+
+resource "juju_integration" "coordinator_to_pgbouncer" {
   model_uuid = var.model_uuid
   application {
     name     = var.airflow_coordinator.app_name
     endpoint = module.airflow_coordinator.requires.postgres
   }
   application {
-    name     = var.postgresql.app_name
-    endpoint = module.postgresql.provides.database
+    name     = juju_application.pgbouncer.name
+    endpoint = "database"
   }
 }
 
