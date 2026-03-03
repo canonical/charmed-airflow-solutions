@@ -1,11 +1,11 @@
 module "postgresql" {
   # rev742 is the latest charm revision for postgresql-k8s 16/edge.
-  source     = "git::https://github.com/canonical/postgresql-k8s-operator//terraform?ref=rev742"
-  juju_model = var.model_uuid
-  app_name   = var.postgresql.app_name
-  channel    = var.postgresql.channel
-  base       = var.postgresql.base
-  units      = var.postgresql.units
+  source             = "git::https://github.com/canonical/postgresql-k8s-operator//terraform?ref=rev742"
+  juju_model         = var.model_uuid
+  app_name           = var.postgresql.app_name
+  channel            = var.postgresql.channel
+  base               = var.postgresql.base
+  units              = var.postgresql.units
   storage_directives = var.postgresql.storage_directives
   config = merge(
     var.postgresql.config,
