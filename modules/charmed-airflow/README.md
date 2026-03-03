@@ -42,7 +42,6 @@ Each Airflow charm input object supports:
 | `channel` | string | Charm channel to deploy from | `3.1/edge` |
 | `revision` | number | Charm revision to use | `null` |
 | `units` | number | Number of application units | `1` |
-| `constraints` | string | Juju constraints for the application | `null` |
 | `config` | map(string) | Charm-specific configuration options | `{}` |
 
 The PostgreSQL input object supports:
@@ -54,9 +53,7 @@ The PostgreSQL input object supports:
 | `base` | string | Base to deploy the application with | `ubuntu@22.04` |
 | `revision` | number | Charm revision to use | `null` |
 | `units` | number | Number of application units | `1` |
-| `constraints` | string | Juju constraints for the application | `arch=amd64` |
 | `storage_directives` | map(string) | Storage directives to apply | `{}` |
-| `resources` | map(string) | Resource overrides | `{}` |
 | `config` | map(string) | Charm configuration options | `{}` |
 
 ---

@@ -10,6 +10,7 @@ variable "airflow_api_server" {
     channel  = optional(string, "3.1/edge")
     units    = optional(number, 1)
     config   = optional(map(string), {})
+    revision = optional(string, null)
   })
   default = {}
 }
@@ -21,6 +22,7 @@ variable "airflow_coordinator" {
     channel  = optional(string, "3.1/edge")
     units    = optional(number, 1)
     config   = optional(map(string), {})
+    revision = optional(string, null)
   })
   default = {}
 }
@@ -32,6 +34,7 @@ variable "airflow_dag_processor" {
     channel  = optional(string, "3.1/edge")
     units    = optional(number, 1)
     config   = optional(map(string), {})
+    revision = optional(string, null)
   })
   default = {}
 }
@@ -43,6 +46,7 @@ variable "airflow_scheduler" {
     channel  = optional(string, "3.1/edge")
     units    = optional(number, 1)
     config   = optional(map(string), {})
+    revision = optional(string, null)
   })
   default = {}
 }
@@ -54,6 +58,7 @@ variable "airflow_triggerer" {
     channel  = optional(string, "3.1/edge")
     units    = optional(number, 1)
     config   = optional(map(string), {})
+    revision = optional(string, null)
   })
   default = {}
 }
@@ -61,23 +66,26 @@ variable "airflow_triggerer" {
 variable "postgresql" {
   description = "Inputs for postgresql-k8s charm module."
   type = object({
-    app_name = optional(string, "postgresql")
-    channel  = optional(string, "14/stable")
-    base     = optional(string, "ubuntu@22.04")
-    units    = optional(number, 3)
-    profile  = optional(string, "production")
-    config   = optional(map(string), {})
+    app_name           = optional(string, "postgresql")
+    channel            = optional(string, "14/stable")
+    base               = optional(string, "ubuntu@22.04")
+    units              = optional(number, 3)
+    profile            = optional(string, "production")
+    config             = optional(map(string), {})
+    revision           = optional(string, null)
+    storage_directives = optional(map(string), null)
   })
   default = {}
 }
 
 variable "pgbouncer" {
-  description = "Specs related to pgbouncer"
+  description = "Inputs for pgbouncer-k8s charm"
   type = object({
     app_name = optional(string, "pgbouncer")
     channel  = optional(string, "1/stable")
     units    = optional(number, 1)
     config   = optional(map(string), {})
+    revision = optional(string, null)
   })
   default = {}
 }

@@ -1,5 +1,4 @@
 module "postgresql" {
-  # tflint-ignore: terraform_module_pinned_source 16/edge.
   # rev742 is the latest charm revision for postgresql-k8s 16/edge.
   source     = "git::https://github.com/canonical/postgresql-k8s-operator//terraform?ref=rev742"
   juju_model = var.model_uuid
@@ -7,6 +6,7 @@ module "postgresql" {
   channel    = var.postgresql.channel
   base       = var.postgresql.base
   units      = var.postgresql.units
+  storage_directives = var.postgresql.storage_directives
   config = merge(
     var.postgresql.config,
     { profile = var.postgresql.profile }
@@ -20,8 +20,9 @@ resource "juju_application" "pgbouncer" {
   units      = var.pgbouncer.units
   config     = var.pgbouncer.config
   charm {
-    name    = "pgbouncer-k8s"
-    channel = var.pgbouncer.channel
+    name     = "pgbouncer-k8s"
+    channel  = var.pgbouncer.channel
+    revision = var.pgbouncer.revision != null ? var.pgbouncer.revision : null
   }
 }
 
@@ -32,6 +33,7 @@ module "airflow_coordinator" {
   channel    = var.airflow_coordinator.channel
   units      = var.airflow_coordinator.units
   config     = var.airflow_coordinator.config
+  revision   = var.airflow_coordinator.revision
 }
 
 module "airflow_api_server" {
@@ -41,6 +43,8 @@ module "airflow_api_server" {
   channel    = var.airflow_api_server.channel
   units      = var.airflow_api_server.units
   config     = var.airflow_api_server.config
+  revision   = var.airflow_api_server.revision
+
 }
 
 module "airflow_scheduler" {
@@ -50,6 +54,7 @@ module "airflow_scheduler" {
   channel    = var.airflow_scheduler.channel
   units      = var.airflow_scheduler.units
   config     = var.airflow_scheduler.config
+  revision   = var.airflow_scheduler.revision
 }
 
 module "airflow_triggerer" {
@@ -59,6 +64,7 @@ module "airflow_triggerer" {
   channel    = var.airflow_triggerer.channel
   units      = var.airflow_triggerer.units
   config     = var.airflow_triggerer.config
+  revision   = var.airflow_triggerer.revision
 }
 
 module "airflow_dag_processor" {
@@ -68,4 +74,5 @@ module "airflow_dag_processor" {
   channel    = var.airflow_dag_processor.channel
   units      = var.airflow_dag_processor.units
   config     = var.airflow_dag_processor.config
+  revision   = var.airflow_dag_processor.revision
 }

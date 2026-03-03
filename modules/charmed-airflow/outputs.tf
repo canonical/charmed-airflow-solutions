@@ -2,6 +2,7 @@ output "applications" {
   description = "All charm modules which make up this product module."
   value = {
     postgresql = module.postgresql
+    pgbouncer  = juju_application.pgbouncer
     airflow = {
       coordinator   = module.airflow_coordinator
       api_server    = module.airflow_api_server
