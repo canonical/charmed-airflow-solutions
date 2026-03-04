@@ -11,6 +11,7 @@ module "postgresql" {
     var.postgresql.config,
     { profile = var.postgresql.profile }
   )
+  revision = var.postgresql.revision
 }
 
 resource "juju_application" "pgbouncer" {
@@ -22,7 +23,7 @@ resource "juju_application" "pgbouncer" {
   charm {
     name     = "pgbouncer-k8s"
     channel  = var.pgbouncer.channel
-    revision = var.pgbouncer.revision != null ? var.pgbouncer.revision : null
+    revision = var.pgbouncer.revision
   }
 }
 

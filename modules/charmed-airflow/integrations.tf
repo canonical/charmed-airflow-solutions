@@ -23,6 +23,7 @@ resource "juju_integration" "coordinator_to_pgbouncer" {
   }
 }
 
+
 resource "juju_integration" "api_server_to_coordinator" {
   model_uuid = var.model_uuid
   application {

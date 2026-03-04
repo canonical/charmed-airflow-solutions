@@ -28,11 +28,13 @@ This module deploys the following components and their relations:
 | --- | --- | --- | --- |
 | `model_uuid` | string | Reference to an existing Juju model to deploy Airflow into | true |
 | `postgresql` | object | Configuration for the `postgresql-k8s` charm module | false |
+| `pgbouncer` | object | Configuration for the `pgbouncer-k8s` charm | false |
 | `airflow_coordinator` | object | Configuration for the `airflow-coordinator-k8s` charm module | false |
 | `airflow_api_server` | object | Configuration for the `airflow-api-server-k8s` charm module | false |
 | `airflow_scheduler` | object | Configuration for the `airflow-scheduler-k8s` charm module | false |
 | `airflow_triggerer` | object | Configuration for the `airflow-triggerer-k8s` charm module | false |
 | `airflow_dag_processor` | object | Configuration for the `airflow-dag-processor-k8s` charm module | false |
+
 
 Each Airflow charm input object supports:
 
