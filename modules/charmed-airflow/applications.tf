@@ -28,7 +28,7 @@ resource "juju_application" "pgbouncer" {
 }
 
 module "airflow_coordinator" {
-  source     = "git::https://github.com/canonical/airflow-coordinator-k8s-operator//terraform?ref=9a37d488d5ad1b2306f5b6ab7e62e57ae0075116"
+  source     = "git::https://github.com/canonical/airflow-coordinator-k8s-operator//terraform?ref=edf3853e76e62afe13b0383abaefcc4d16788884"
   model_uuid = var.model_uuid
   app_name   = var.airflow_coordinator.app_name
   channel    = var.airflow_coordinator.channel
@@ -38,7 +38,7 @@ module "airflow_coordinator" {
 }
 
 module "airflow_api_server" {
-  source     = "git::https://github.com/canonical/airflow-core-operators//charms/api-server/terraform?ref=b88b70bec903293c62b3266ea823747ffdeebbfe"
+  source     = "git::https://github.com/canonical/airflow-core-operators//charms/api-server/terraform?ref=34a4e72a278c8749a701dbae52283b8cb607ebf9"
   model_uuid = var.model_uuid
   app_name   = var.airflow_api_server.app_name
   channel    = var.airflow_api_server.channel
