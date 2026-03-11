@@ -36,6 +36,18 @@ resource "juju_integration" "api_server_to_coordinator" {
   }
 }
 
+resource "juju_integration" "coordinator_to_api_server" {
+  model_uuid = var.model_uuid
+  application {
+    name     = module.airflow_api_server.application.name
+    endpoint = module.airflow_api_server.provides.airflow_api_server
+  }
+  application {
+    name     = module.airflow_coordinator.application.name
+    endpoint = module.airflow_coordinator.requires.airflow_api_server
+  }
+}
+
 resource "juju_integration" "scheduler_to_coordinator" {
   model_uuid = var.model_uuid
   application {

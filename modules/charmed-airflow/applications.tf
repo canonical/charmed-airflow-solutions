@@ -28,7 +28,7 @@ resource "juju_application" "pgbouncer" {
 }
 
 module "airflow_coordinator" {
-  source     = "git::https://github.com/canonical/airflow-coordinator-k8s-operator//terraform?ref=edf3853e76e62afe13b0383abaefcc4d16788884"
+  source     = "git::https://github.com/canonical/airflow-coordinator-k8s-operator//terraform?ref=ea36baf499326bf81965819040174548b691fc39"
   model_uuid = var.model_uuid
   app_name   = var.airflow_coordinator.app_name
   channel    = var.airflow_coordinator.channel
@@ -38,7 +38,7 @@ module "airflow_coordinator" {
 }
 
 module "airflow_api_server" {
-  source     = "git::https://github.com/canonical/airflow-core-operators//charms/api-server/terraform?ref=34a4e72a278c8749a701dbae52283b8cb607ebf9"
+  source     = "git::https://github.com/canonical/airflow-core-operators//charms/api-server/terraform?ref=bc0aab0efe80e296e1ca9d1fcce476c61118eb8f"
   model_uuid = var.model_uuid
   app_name   = var.airflow_api_server.app_name
   channel    = var.airflow_api_server.channel
@@ -49,7 +49,7 @@ module "airflow_api_server" {
 }
 
 module "airflow_scheduler" {
-  source     = "git::https://github.com/canonical/airflow-core-operators//charms/scheduler/terraform?ref=b88b70bec903293c62b3266ea823747ffdeebbfe"
+  source     = "git::https://github.com/canonical/airflow-core-operators//charms/scheduler/terraform?ref=bc0aab0efe80e296e1ca9d1fcce476c61118eb8f"
   model_uuid = var.model_uuid
   app_name   = var.airflow_scheduler.app_name
   channel    = var.airflow_scheduler.channel
@@ -59,7 +59,7 @@ module "airflow_scheduler" {
 }
 
 module "airflow_triggerer" {
-  source     = "git::https://github.com/canonical/airflow-core-operators//charms/triggerer/terraform?ref=b88b70bec903293c62b3266ea823747ffdeebbfe"
+  source     = "git::https://github.com/canonical/airflow-core-operators//charms/triggerer/terraform?ref=bc0aab0efe80e296e1ca9d1fcce476c61118eb8f"
   model_uuid = var.model_uuid
   app_name   = var.airflow_triggerer.app_name
   channel    = var.airflow_triggerer.channel
@@ -69,7 +69,7 @@ module "airflow_triggerer" {
 }
 
 module "airflow_dag_processor" {
-  source     = "git::https://github.com/canonical/airflow-core-operators//charms/dag-processor/terraform?ref=b88b70bec903293c62b3266ea823747ffdeebbfe"
+  source     = "git::https://github.com/canonical/airflow-core-operators//charms/dag-processor/terraform?ref=bc0aab0efe80e296e1ca9d1fcce476c61118eb8f"
   model_uuid = var.model_uuid
   app_name   = var.airflow_dag_processor.app_name
   channel    = var.airflow_dag_processor.channel
