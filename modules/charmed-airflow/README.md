@@ -55,7 +55,7 @@ The PostgreSQL input object supports:
 | `channel` | string | Charm channel to deploy from | `14/stable` |
 | `base` | string | Base to deploy the application with | `ubuntu@22.04` |
 | `revision` | number | Charm revision to use | `null` |
-| `units` | number | Number of application units | `1` |
+| `units` | number | Number of application units | `3` |
 | `storage_directives` | map(string) | Storage directives to apply | `{}` |
 | `config` | map(string) | Charm configuration options | `{}` |
 
