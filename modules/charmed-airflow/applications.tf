@@ -1,5 +1,5 @@
 module "postgresql" {
-  # rev742 is the latest charm revision for postgresql-k8s 16/edge.
+  # rev742 is a revision for postgresql-k8s 16/edge.
   source             = "git::https://github.com/canonical/postgresql-k8s-operator//terraform?ref=rev742"
   juju_model         = var.model_uuid
   app_name           = var.postgresql.app_name
