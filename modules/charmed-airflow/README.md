@@ -12,6 +12,7 @@ This module deploys the following components and their relations:
 | Component | Charm | Role |
 | --- | --- | --- |
 | `postgresql` | `postgresql-k8s` | Backend metadata database. |
+| `pgbouncer` | `pgbouncer-k8s` | Connection pooling proxy for metadata database access. |
 | `airflow-coordinator` | `airflow-coordinator-k8s` | Central coordinator for configuration and migrations. |
 | `airflow-api-server` | `airflow-api-server-k8s` | REST API endpoint for Airflow. |
 | `airflow-scheduler` | `airflow-scheduler-k8s` | Schedules and triggers task instances. |
@@ -74,7 +75,8 @@ The following relations are automatically established:
 
 | Integration | Purpose |
 | --- | --- |
-| `airflow-coordinator ↔ postgresql` | Metadata database connectivity and migrations. |
+| `postgresql ↔ pgbouncer` | Backend database integration providing the primary data store and schema management. |
+| `airflow-coordinator ↔ pgbouncer` | Metadata database connectivity and migrations. |
 | `airflow-api-server ↔ airflow-coordinator` | API server registration and configuration. |
 | `airflow-scheduler ↔ airflow-coordinator` | Scheduler registration and configuration. |
 | `airflow-triggerer ↔ airflow-coordinator` | Triggerer registration and configuration. |

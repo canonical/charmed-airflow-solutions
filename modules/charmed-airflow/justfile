@@ -64,7 +64,7 @@ kgoss-checks:
     GOSS_KUBECTL_OPTS="--namespace=airflow-test" \
     kgoss run -i ubuntu/airflow:3.1-24.04_edge -p
 
-# Run kgoss checks in an interactive mode for debugging
+# Run airflow pod and attach shell in interactive mode
 kgoss-checks-run:
     #!/usr/bin/bash
     set -euxo pipefail
