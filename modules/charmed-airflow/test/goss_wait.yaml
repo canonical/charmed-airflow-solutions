@@ -1,0 +1,5 @@
+command:
+  install-deps:
+    exec: |
+      apt update && apt install -y curl jq
+    exit-status: 0

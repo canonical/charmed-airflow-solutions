@@ -1,0 +1,8 @@
+command:
+  api-health-check-components:
+    exec: >-
+      curl -fsS http://airflow-api-server-endpoints.airflow-test.svc.cluster.local:8080/api/v2/monitor/health
+      | jq -e 'all(.[]; .status == "healthy")'
+    exit-status: 0
+    stdout:
+      - "true"

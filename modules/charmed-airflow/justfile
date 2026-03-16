@@ -1,0 +1,109 @@
+set export := true
+
+# Default: show all recipes
+default:
+    @just --list
+
+# Clean tfvars file
+[private]
+clean_tfvars variables_file:
+    #!/usr/bin/bash
+    set -euxo pipefail
+    if [ -f "${variables_file}" ]; then
+        sed -i '/^model_uuid[[:space:]]*=/d' "${variables_file}"
+    fi
+
+# Initialize terraform
+[private]
+initialize:
+    #!/usr/bin/bash
+    if [ ! -d ".terraform" ]; then
+        terraform init -backend=false
+    fi
+
+# Destroy model if exists
+[private]
+destroy-model:
+    juju destroy-model --no-prompt --destroy-storage airflow-test --force || true
+
+# Add a fresh model
+add-model: (destroy-model)
+    juju add-model airflow-test
+
+# Validate and create tfvars file
+validate_test_tfvars variables_file: (clean_tfvars variables_file)
+    #!/usr/bin/bash
+
+    set -euxo pipefail
+    MODEL_UUID=$(juju show-model airflow-test --format=json | jq -r '."airflow-test"["model-uuid"]')
+    if ! juju show-model "${MODEL_UUID}" >/dev/null 2>&1; then
+        exit 1
+    fi
+    echo "model_uuid = \"${MODEL_UUID}\"" >> "${variables_file}"
+
+# Terraform fmt
+fmt: (initialize)
+    terraform fmt -recursive
+
+# Terraform validate
+validate: (initialize)
+    terraform validate
+
+# Lint
+lint:
+    tflint
+
+# Run kgoss checks
+kgoss-checks:
+    #!/usr/bin/bash
+    set -euxo pipefail
+    
+    env GOSS_FILES_PATH="test" \
+    GOSS_OPTS="--color" \
+    GOSS_WAIT_OPTS="-r 480s -s 2s" \
+    GOSS_KUBECTL_OPTS="--namespace=airflow-test" \
+    kgoss run -i ubuntu/airflow:3.1-24.04_edge -p
+
+# Run airflow pod and attach shell in interactive mode
+kgoss-checks-run:
+    #!/usr/bin/bash
+    set -euxo pipefail
+    
+    env GOSS_FILES_PATH="test" \
+    GOSS_OPTS="--color" \
+    GOSS_WAIT_OPTS="-r 480s -s 2s" \
+    GOSS_KUBECTL_OPTS="--namespace=airflow-test" \
+    kgoss edit -i ubuntu/airflow:3.1-24.04_edge -p
+
+# Apply with variables file
+apply variables_file: (initialize)
+    terraform apply -auto-approve -var-file="${variables_file}"
+
+# Destroy terraform and model with variables file
+destroy variables_file:
+    #!/usr/bin/bash
+    set -euxo pipefail
+    if [ ! -f "${variables_file}" ]; then
+        exit 1
+    fi
+    terraform destroy -auto-approve -var-file="${variables_file}" || true
+    just destroy-model
+
+# Full test (create model, apply, wait, kgoss checks, cleanup)
+test:
+    #!/usr/bin/bash
+    set -euxo pipefail
+
+    trap 'just destroy "test/terraform_test.tfvars"' EXIT
+
+    just add-model
+
+    just validate_test_tfvars "test/terraform_test.tfvars"
+
+    just apply "test/terraform_test.tfvars"
+
+    juju wait-for model airflow-test \
+        --query='forEach(applications, app => app.status == "active")' \
+        --timeout=1200s
+
+    just kgoss-checks

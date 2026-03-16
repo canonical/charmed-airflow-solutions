@@ -1,0 +1,3 @@
+postgresql = {
+  profile = "testing"
+}
