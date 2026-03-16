@@ -28,7 +28,7 @@ resource "juju_application" "pgbouncer" {
 }
 
 module "airflow_coordinator" {
-  source     = "git::https://github.com/canonical/airflow-coordinator-k8s-operator//terraform?ref=ea36baf499326bf81965819040174548b691fc39"
+  source     = "git::https://github.com/canonical/airflow-coordinator-k8s-operator//terraform?ref=airflow-coordinator-rev17"
   model_uuid = var.model_uuid
   app_name   = var.airflow_coordinator.app_name
   channel    = var.airflow_coordinator.channel
