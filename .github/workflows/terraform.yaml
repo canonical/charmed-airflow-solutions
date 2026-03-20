@@ -10,7 +10,7 @@ on:
 
 jobs:
   pull-request-terraform-checks:
-    name: PR Terraform checks (${{ matrix.just-test-target }})
+    name: PR Terraform checks (${{ matrix.just-target }})
     strategy:
       matrix:
         just-target:
