@@ -89,21 +89,28 @@ destroy variables_file:
     terraform destroy -auto-approve -var-file="${variables_file}" || true
     just destroy-model
 
-# Full test (create model, apply, wait, kgoss checks, cleanup)
-test:
+# Generic test (create model, apply, wait, kgoss checks, cleanup)
+[private]
+_test tfvars:
     #!/usr/bin/bash
     set -euxo pipefail
 
-    trap 'just destroy "test/terraform_test.tfvars"' EXIT
+    trap 'just destroy "{{ tfvars }}"' EXIT
 
     just add-model
 
-    just validate_test_tfvars "test/terraform_test.tfvars"
+    just validate_test_tfvars "{{ tfvars }}"
 
-    just apply "test/terraform_test.tfvars"
+    just apply "{{ tfvars }}"
 
     juju wait-for model airflow-test \
         --query='forEach(applications, app => app.status == "active")' \
         --timeout=1200s
 
     just kgoss-checks
+
+# Full test with local executor (default)
+test: (_test "test/terraform_test_local_executor.tfvars")
+
+# Full test with kubernetes executor
+test-executor: (_test "test/terraform_test_kubernetes_executor.tfvars")

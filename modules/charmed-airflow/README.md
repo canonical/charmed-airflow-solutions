@@ -18,6 +18,7 @@ This module deploys the following components and their relations:
 | `airflow-scheduler` | `airflow-scheduler-k8s` | Schedules and triggers task instances. |
 | `airflow-triggerer` | `airflow-triggerer-k8s` | Runs async triggers for deferrable operators. |
 | `airflow-dag-processor` | `airflow-dag-processor-k8s` | Parses DAGs and serializes them to the DB. |
+| `airflow-executor` (optional) | Executor-specific charm (e.g. `airflow-kubernetes-executor-k8s`) | Configures the Airflow executor type and related settings. Deployed only when `executor` is set. |
 
 ---
 
@@ -28,6 +29,8 @@ This module deploys the following components and their relations:
 | Name | Type | Description | Required |
 | --- | --- | --- | --- |
 | `model_uuid` | string | Reference to an existing Juju model to deploy Airflow into | true |
+| `executor` | string | Executor type to deploy (e.g. `"kubernetes"`). When `null`, no executor charm is deployed and Airflow uses the default `LocalExecutor`. | false |
+| `airflow_kubernetes_executor` | object | Configuration for the `airflow-kubernetes-executor-k8s` charm module. Only used when `executor = "kubernetes"`. | false |
 | `postgresql` | object | Configuration for the `postgresql-k8s` charm module | false |
 | `pgbouncer` | object | Configuration for the `pgbouncer-k8s` charm | false |
 | `airflow_coordinator` | object | Configuration for the `airflow-coordinator-k8s` charm module | false |
@@ -81,6 +84,7 @@ The following relations are automatically established:
 | `airflow-scheduler ↔ airflow-coordinator` | Scheduler registration and configuration. |
 | `airflow-triggerer ↔ airflow-coordinator` | Triggerer registration and configuration. |
 | `airflow-dag-processor ↔ airflow-coordinator` | DAG processor registration and configuration. |
+| `airflow-executor ↔ airflow-coordinator` (when `executor` is set) | Executor configuration exchange. The coordinator sends global Airflow config to the executor, and the executor sends back executor-specific settings (e.g. pod templates). |
 
 ---
 
@@ -88,16 +92,43 @@ The following relations are automatically established:
 
 This solution module can be used standalone or as part of a higher-level Terraform orchestration layer.
 
-### Example: Basic Deployment
+### Example: Basic Deployment (LocalExecutor)
 
-```bash
-terraform apply -var-file=terraform_test.tfvars
-```
-
-Sample `terraform_test.tfvars`:
+By default, no executor charm is deployed and Airflow uses the `LocalExecutor`:
 
 ```hcl
 model_uuid = "<model-uuid>"
+```
+
+### Example: KubernetesExecutor
+
+To deploy with the `KubernetesExecutor`, set `executor = "kubernetes"` and provide the required executor configuration:
+
+```hcl
+model_uuid = "<model-uuid>"
+
+executor = "kubernetes"
+
+airflow_kubernetes_executor = {
+  config = {
+    namespace  = "airflow-workers"
+    base_image = "your-registry/airflow:3.1"
+  }
+}
+```
+
+The `airflow_kubernetes_executor` input object supports the same fields as other Airflow charm inputs (`app_name`, `channel`, `revision`, `units`, `config`). The `config` map is passed directly to the charm and supports the following charm-specific options:
+
+| Option | Type | Required | Description |
+| --- | --- | --- | --- |
+| `namespace` | string | yes | Kubernetes namespace where worker Pods will be scheduled. Must already exist. |
+| `base_image` | string | yes | OCI image for worker Pods. For Local DAG bundle sources, this image must contain the DAGs. |
+| `pod_name` | string | no | Base name for worker Pods (default: `airflow-worker`). |
+
+### Running
+
+```bash
+terraform apply -var-file=test/terraform_test_local_executor.tfvars
 ```
 
 For module validation and smoke tests (including `kgoss` service/API/DB checks):
@@ -106,7 +137,7 @@ For module validation and smoke tests (including `kgoss` service/API/DB checks):
 just test
 ```
 
-`just test` uses [test/terraform_test.tfvars](test/terraform_test.tfvars), runs `kgoss` checks for:
+`just test` uses [test/terraform_test_local_executor.tfvars](test/terraform_test_local_executor.tfvars), runs `kgoss` checks for:
 - Airflow API health endpoint (`http://airflow-api-server-endpoints.airflow-test.svc.cluster.local:8080/api/v2/monitor/health`)
 - Healthy statuses for `metadatabase`, `scheduler`, `triggerer`, and `dag_processor`
 - Scheduler DB connectivity using `airflow db check`
@@ -123,7 +154,7 @@ just test
 To remove the deployment and destroy the associated Juju model:
 
 ```bash
-just destroy ./terraform_test.tfvars
+just destroy test/terraform_test_local_executor.tfvars
 ```
 
 ---
@@ -132,4 +163,5 @@ just destroy ./terraform_test.tfvars
 
 - https://github.com/canonical/airflow-coordinator-k8s-operator
 - https://github.com/canonical/airflow-core-operators
+- https://github.com/canonical/airflow-kubernetes-executor-k8s-operator
 - https://github.com/canonical/postgresql-k8s-operator

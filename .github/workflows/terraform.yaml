@@ -10,8 +10,16 @@ on:
 
 jobs:
   pull-request-terraform-checks:
-    name: PR Terraform checks
-    uses: canonical/workflows-team/.github/workflows/terraform.yaml@main
+    name: PR Terraform checks (${{ matrix.just-test-target }})
+    strategy:
+      matrix:
+        just-test-target:
+          - test
+          - test-executor
+      fail-fast: false
+    # FIXME: change after the branch has been merged to main
+    uses: canonical/workflows-team/.github/workflows/terraform.yaml@dnplas-make-test-targets-inputs
     with:
       module-directory: ./modules/charmed-airflow
+      just-test-target: ${{ matrix.just-test-target }}
       timeout-minutes: 40
