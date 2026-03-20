@@ -10,16 +10,10 @@ on:
 
 jobs:
   pull-request-terraform-checks:
-    name: PR Terraform checks (${{ matrix.just-target }})
-    strategy:
-      matrix:
-        just-target:
-          - test
-          - test-executor
-      fail-fast: false
+    name: PR Terraform checks
     # FIXME: change after the branch has been merged to main
     uses: canonical/workflows-team/.github/workflows/terraform.yaml@dnplas-make-test-targets-inputs
     with:
       module-directory: ./modules/charmed-airflow
-      just-target: ${{ matrix.just-target }}
+      just-targets: '["test", "test-executor"]'
       timeout-minutes: 40
