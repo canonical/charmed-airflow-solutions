@@ -21,5 +21,5 @@ jobs:
     uses: canonical/workflows-team/.github/workflows/terraform.yaml@dnplas-make-test-targets-inputs
     with:
       module-directory: ./modules/charmed-airflow
-      just-test-target: ${{ matrix.just-target }}
+      just-target: ${{ matrix.just-target }}
       timeout-minutes: 40
