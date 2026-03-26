@@ -79,8 +79,7 @@ module "airflow_dag_processor" {
 
 module "airflow_kubernetes_executor" {
   count      = var.executor == "kubernetes" ? 1 : 0
-  # FIXME: change this to a revision once we have published the charm.
-  source     = "git::https://github.com/canonical/airflow-kubernetes-executor-k8s-operator//terraform?ref=track/3.1"
+  source     = "git::https://github.com/canonical/airflow-kubernetes-executor-k8s-operator//terraform?ref=airflow-kubernetes-executor-rev2"
   model_uuid = var.model_uuid
   app_name   = var.airflow_kubernetes_executor.app_name
   channel    = var.airflow_kubernetes_executor.channel

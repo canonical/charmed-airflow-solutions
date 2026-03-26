@@ -11,8 +11,7 @@ on:
 jobs:
   pull-request-terraform-checks:
     name: PR Terraform checks
-    # FIXME: change after the branch has been merged to main
-    uses: canonical/workflows-team/.github/workflows/terraform.yaml@dnplas-make-test-targets-inputs
+    uses: canonical/workflows-team/.github/workflows/terraform.yaml@main
     with:
       module-directory: ./modules/charmed-airflow
       just-targets: '["test", "test-executor"]'
