@@ -106,6 +106,6 @@ resource "juju_integration" "executor_to_coordinator" {
   }
   application {
     name     = module.airflow_coordinator.application.name
-    endpoint = module.airflow_coordinator.requires.airflow_executor_config
+    endpoint = module.airflow_coordinator.requires.airflow_kubernetes_executor
   }
 }
