@@ -89,6 +89,28 @@ destroy variables_file:
     terraform destroy -auto-approve -var-file="${variables_file}" || true
     just destroy-model
 
+# Wait for all applications to be active
+wait-for-active:
+    #!/usr/bin/env bash
+    set -euxo pipefail
+
+    timeout=1200
+    elapsed=0
+    interval=10
+    while [ $elapsed -lt $timeout ]; do
+        # Run the command on intervals to make sure juju sees the actual state of the model
+        # Sometimes it gets stuck at waiting even if applications in the model are active
+        # if we just call it directly. This is likely a bug on juju's end.
+        if juju wait-for model airflow-test \
+            --query='forEach(applications, app => app.status == "active")' \
+            --timeout=${interval}s; then
+            exit 0
+        fi
+        elapsed=$((elapsed + interval))
+    done
+    echo "Timed out waiting for model to become active"
+    exit 1
+
 # Generic test (create model, apply, wait, kgoss checks, cleanup)
 [private]
 _test tfvars:
@@ -103,9 +125,7 @@ _test tfvars:
 
     just apply "{{ tfvars }}"
 
-    juju wait-for model airflow-test \
-        --query='forEach(applications, app => app.status == "active")' \
-        --timeout=1200s
+    just wait-for-active
 
     just kgoss-checks
 
