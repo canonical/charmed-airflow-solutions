@@ -103,7 +103,7 @@ wait-for-active:
         # if we just call it directly. This is likely a bug on juju's end.
         if juju wait-for model airflow-test \
             --query='forEach(applications, app => app.status == "active")' \
-            --timeout=${interval}s; then
+            --timeout=${interval}s 2>/dev/null; then
             exit 0
         fi
         elapsed=$((elapsed + interval))
