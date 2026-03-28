@@ -141,4 +141,4 @@ _test tfvars:
 test: (_test "test/terraform_test_local_executor.tfvars")
 
 # Full test with kubernetes executor
-test-executor: (create-namespace "airflow-executor-workers") (_test "test/terraform_test_kubernetes_executor.tfvars")
+test-k8s-executor: (create-namespace "airflow-executor-workers") (_test "test/terraform_test_kubernetes_executor.tfvars")
