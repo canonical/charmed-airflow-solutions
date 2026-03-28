@@ -111,6 +111,14 @@ wait-for-active:
     echo "Timed out waiting for model to become active"
     exit 1
 
+# Create a Kubernetes namespace if it doesn't exist
+[private]
+create-namespace ns:
+    #!/usr/bin/bash
+    set -euxo pipefail
+    command -v kubectl >/dev/null 2>&1 || { echo "kubectl not found"; exit 1; }
+    kubectl create namespace "{{ ns }}" --dry-run=client -o yaml | kubectl apply -f -
+
 # Generic test (create model, apply, wait, kgoss checks, cleanup)
 [private]
 _test tfvars:
@@ -133,4 +141,4 @@ _test tfvars:
 test: (_test "test/terraform_test_local_executor.tfvars")
 
 # Full test with kubernetes executor
-test-executor: (_test "test/terraform_test_kubernetes_executor.tfvars")
+test-executor: (create-namespace "airflow-executor-workers") (_test "test/terraform_test_kubernetes_executor.tfvars")
