@@ -117,6 +117,7 @@ create-namespace ns:
     #!/usr/bin/bash
     set -euxo pipefail
     command -v kubectl >/dev/null 2>&1 || { echo "kubectl not found"; exit 1; }
+    # Ensure idempotency
     kubectl create namespace "{{ ns }}" --dry-run=client -o yaml | kubectl apply -f -
 
 # Generic test (create model, apply, wait, kgoss checks, cleanup)
