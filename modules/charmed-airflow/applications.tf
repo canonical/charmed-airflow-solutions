@@ -47,9 +47,8 @@ module "airflow_api_server" {
   revision   = var.airflow_api_server.revision
 }
 
-# FIXME: Change module ref back to a release tag once dnplas-test-trust is merged to main.
 module "airflow_scheduler" {
-  source     = "git::https://github.com/canonical/airflow-core-operators//charms/scheduler/terraform?ref=dnplas-test-trust"
+  source     = "git::https://github.com/canonical/airflow-core-operators//charms/scheduler/terraform?ref=scheduler-rev10"
   model_uuid = var.model_uuid
   app_name   = var.airflow_scheduler.app_name
   channel    = var.airflow_scheduler.channel
@@ -79,10 +78,9 @@ module "airflow_dag_processor" {
   revision   = var.airflow_dag_processor.revision
 }
 
-# FIXME: Change module ref back to a release tag once dnplas-test-trust is merged to main.
 module "airflow_kubernetes_executor" {
   count      = var.executor == "kubernetes" ? 1 : 0
-  source     = "git::https://github.com/canonical/airflow-kubernetes-executor-k8s-operator//terraform?ref=dnplas-test-trust"
+  source     = "git::https://github.com/canonical/airflow-kubernetes-executor-k8s-operator//terraform?ref=airflow-kubernetes-executor-rev3"
   model_uuid = var.model_uuid
   app_name   = var.airflow_kubernetes_executor.app_name
   channel    = var.airflow_kubernetes_executor.channel
