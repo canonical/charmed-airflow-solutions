@@ -9,6 +9,7 @@ output "applications" {
       scheduler     = module.airflow_scheduler
       triggerer     = module.airflow_triggerer
       dag_processor = module.airflow_dag_processor
+      executor      = local.executor_module
     }
   }
 }

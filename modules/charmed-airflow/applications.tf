@@ -28,7 +28,7 @@ resource "juju_application" "pgbouncer" {
 }
 
 module "airflow_coordinator" {
-  source     = "git::https://github.com/canonical/airflow-coordinator-k8s-operator//terraform?ref=airflow-coordinator-rev17"
+  source     = "git::https://github.com/canonical/airflow-coordinator-k8s-operator//terraform?ref=airflow-coordinator-rev21"
   model_uuid = var.model_uuid
   app_name   = var.airflow_coordinator.app_name
   channel    = var.airflow_coordinator.channel
@@ -48,13 +48,14 @@ module "airflow_api_server" {
 }
 
 module "airflow_scheduler" {
-  source     = "git::https://github.com/canonical/airflow-core-operators//charms/scheduler/terraform?ref=scheduler-rev6"
+  source     = "git::https://github.com/canonical/airflow-core-operators//charms/scheduler/terraform?ref=scheduler-rev10"
   model_uuid = var.model_uuid
   app_name   = var.airflow_scheduler.app_name
   channel    = var.airflow_scheduler.channel
   units      = var.airflow_scheduler.units
   config     = var.airflow_scheduler.config
   revision   = var.airflow_scheduler.revision
+  trust      = var.executor == "kubernetes"
 }
 
 module "airflow_triggerer" {
@@ -75,4 +76,15 @@ module "airflow_dag_processor" {
   units      = var.airflow_dag_processor.units
   config     = var.airflow_dag_processor.config
   revision   = var.airflow_dag_processor.revision
+}
+
+module "airflow_kubernetes_executor" {
+  count      = var.executor == "kubernetes" ? 1 : 0
+  source     = "git::https://github.com/canonical/airflow-kubernetes-executor-k8s-operator//terraform?ref=airflow-kubernetes-executor-rev3"
+  model_uuid = var.model_uuid
+  app_name   = var.airflow_kubernetes_executor.app_name
+  channel    = var.airflow_kubernetes_executor.channel
+  units      = var.airflow_kubernetes_executor.units
+  config     = var.airflow_kubernetes_executor.config
+  revision   = var.airflow_kubernetes_executor.revision
 }

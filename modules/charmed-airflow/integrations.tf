@@ -82,3 +82,30 @@ resource "juju_integration" "coordinator_to_dag_processor" {
     endpoint = module.airflow_dag_processor.requires.airflow_coordinator
   }
 }
+
+# Executor endpoint names are mapped per executor type in local.executor_endpoints.
+resource "juju_integration" "coordinator_to_executor" {
+  count      = var.executor != null ? 1 : 0
+  model_uuid = var.model_uuid
+  application {
+    name     = module.airflow_coordinator.application.name
+    endpoint = module.airflow_coordinator.provides.airflow_coordinator
+  }
+  application {
+    name     = local.executor_module.application.name
+    endpoint = local.executor_endpoints[var.executor].requires
+  }
+}
+
+resource "juju_integration" "executor_to_coordinator" {
+  count      = var.executor != null ? 1 : 0
+  model_uuid = var.model_uuid
+  application {
+    name     = local.executor_module.application.name
+    endpoint = local.executor_endpoints[var.executor].provides
+  }
+  application {
+    name     = module.airflow_coordinator.application.name
+    endpoint = module.airflow_coordinator.requires.airflow_kubernetes_executor
+  }
+}

@@ -89,21 +89,57 @@ destroy variables_file:
     terraform destroy -auto-approve -var-file="${variables_file}" || true
     just destroy-model
 
-# Full test (create model, apply, wait, kgoss checks, cleanup)
-test:
+# Wait for all applications to be active
+wait-for-active:
+    #!/usr/bin/env bash
+    set -euxo pipefail
+
+    timeout=1200
+    elapsed=0
+    interval=10
+    while [ $elapsed -lt $timeout ]; do
+        # Run the command on intervals to make sure juju sees the actual state of the model
+        # Sometimes it gets stuck at waiting even if applications in the model are active
+        # if we just call it directly. This is likely a bug on juju's end.
+        if juju wait-for model airflow-test \
+            --query='forEach(applications, app => app.status == "active")' \
+            --timeout=${interval}s 2>/dev/null; then
+            exit 0
+        fi
+        elapsed=$((elapsed + interval))
+    done
+    echo "Timed out waiting for model to become active"
+    exit 1
+
+# Create a Kubernetes namespace if it doesn't exist
+[private]
+create-namespace ns:
+    #!/usr/bin/bash
+    set -euxo pipefail
+    command -v kubectl >/dev/null 2>&1 || { echo "kubectl not found"; exit 1; }
+    # Ensure idempotency
+    kubectl create namespace "{{ ns }}" --dry-run=client -o yaml | kubectl apply -f -
+
+# Generic test (create model, apply, wait, kgoss checks, cleanup)
+[private]
+_test tfvars:
     #!/usr/bin/bash
     set -euxo pipefail
 
-    trap 'just destroy "test/terraform_test.tfvars"' EXIT
+    trap 'just destroy "{{ tfvars }}"' EXIT
 
     just add-model
 
-    just validate_test_tfvars "test/terraform_test.tfvars"
+    just validate_test_tfvars "{{ tfvars }}"
 
-    just apply "test/terraform_test.tfvars"
+    just apply "{{ tfvars }}"
 
-    juju wait-for model airflow-test \
-        --query='forEach(applications, app => app.status == "active")' \
-        --timeout=1200s
+    just wait-for-active
 
     just kgoss-checks
+
+# Full test with local executor (default)
+test: (_test "test/terraform_test_local_executor.tfvars")
+
+# Full test with kubernetes executor
+test-k8s-executor: (create-namespace "airflow-executor-workers") (_test "test/terraform_test_kubernetes_executor.tfvars")
