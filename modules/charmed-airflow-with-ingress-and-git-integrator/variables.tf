@@ -129,7 +129,7 @@ variable "git_integrator" {
   description = "Inputs for git-integrator charm module. The repository_url, path and tracking_ref defaults point at apache/airflow example DAGs on main."
   type = object({
     app_name = optional(string, "git-integrator")
-    channel  = optional(string, "latest/edge")
+    channel  = optional(string, "1.0/edge")
     units    = optional(number, 1)
     config = optional(map(string), {
       repository_url = "https://github.com/apache/airflow"

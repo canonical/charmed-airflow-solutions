@@ -1,0 +1,32 @@
+set export := true
+
+# Default: show all recipes
+default:
+    @just --list
+
+# Provision the juju model + Kubernetes namespace and populate the demo tfvars
+setup-env:
+    cd demo && ./setup_env.sh
+
+# Generate a Fernet key, add it as a juju secret, and configure airflow-coordinator
+setup-fernet-key:
+    cd demo && ./setup_fernet_key.sh
+
+# Tear down the juju model, namespace, terraform state, and revert tfvars edits
+cleanup:
+    cd demo && ./cleanup.sh
+
+# Initialize terraform (idempotent)
+[private]
+initialize:
+    #!/usr/bin/bash
+    if [ ! -d ".terraform" ]; then
+        terraform init
+    fi
+
+# Apply the terraform module with the demo tfvars
+apply: initialize
+    terraform apply -auto-approve -var-file=demo/terraform_test_kubernetes_executor.tfvars
+
+# Run the full demo end-to-end: setup env, deploy with terraform, configure fernet key
+all: setup-env apply setup-fernet-key
