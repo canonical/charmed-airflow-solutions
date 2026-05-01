@@ -14,8 +14,11 @@ kubectl create ns $KUBERNETES_NAMESPACE
 juju add-model $MODEL_NAME
 MODEL_UUID=$(juju show-model $MODEL_NAME | yq ".\"$MODEL_NAME\".model-uuid")
 
+# Drop any pre-existing model_uuid line so re-running this script stays idempotent
+sed -i '/^model_uuid[[:space:]]*=/d' $TFVARS_FILE
 # Append the model-uuid to the .tfvars file
 echo "model_uuid = \"$MODEL_UUID\"" >> $TFVARS_FILE
 
-# Replace the placeholder kubernetes executor namespace with the one just created
-sed -i "s|namespace  = \"airflow-executor-workers\"|namespace  = \"$KUBERNETES_NAMESPACE\"|" $TFVARS_FILE
+# Replace the kubernetes executor namespace (matches the placeholder or any
+# previously-substituted hash suffix) with the one just created
+sed -i -E "s|namespace([[:space:]]+)= \"airflow-executor-workers(-[a-z0-9]+)?\"|namespace\\1= \"$KUBERNETES_NAMESPACE\"|" $TFVARS_FILE
