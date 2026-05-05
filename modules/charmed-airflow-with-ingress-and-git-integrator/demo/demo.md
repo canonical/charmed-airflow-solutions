@@ -14,6 +14,7 @@ We'll deploy:
 * `just` (recipes are defined in the parent module's `justfile`)
 * `python3` with the `cryptography` package available (used by `setup_fernet_key.sh`)
 * `yq` (used by `setup_env.sh` to parse `juju show-model` output)
+* A Kubernetes cluster with LoadBalancer and CIDRs configured (traefik requirement)
 
 All `just` commands below are run from the parent module directory
 (`modules/charmed-airflow-with-ingress-and-git-integrator/`).
@@ -49,7 +50,8 @@ just apply
 `terraform apply -auto-approve -var-file=demo/terraform_test_kubernetes_executor.tfvars`.
 
 This deploys:
-* the core `charmed-airflow` stack (postgresql, pgbouncer, coordinator, api-server, scheduler, triggerer, dag-processor)
+* the core `charmed-airflow` stack (coordinator, api-server, scheduler, triggerer, dag-processor)
+* the Metadata DB components (postgresql, pgbouncer)
 * `airflow-kubernetes-executor`, related to the coordinator
 * `traefik-k8s`, related to the api-server's `ingress` endpoint
 * `git-integrator`, related to the coordinator's `git` endpoint, pre-configured to track `apache/airflow` `airflow-core/src/airflow/example_dags` on `main`
