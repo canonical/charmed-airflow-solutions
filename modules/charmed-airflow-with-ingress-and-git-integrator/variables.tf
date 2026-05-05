@@ -134,7 +134,7 @@ variable "git_integrator" {
     config = optional(map(string), {
       repository_url = "https://github.com/apache/airflow"
       path           = "airflow-core/src/airflow/example_dags"
-      tracking_ref   = "main"
+      tracking_ref   = "v3-1-stable"
     })
     revision = optional(number, null)
   })
