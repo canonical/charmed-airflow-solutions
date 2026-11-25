@@ -206,6 +206,8 @@ test-cos:
 
     just apply-with-overlay "test/terraform_test_local_executor.tfvars" "test/terraform_cos.tfvars"
 
+    just configure-fernet-key
+
     # otel-collector is expected to end up blocked on the mandatory-relation pair check
     # when `receive-otlp` has peers but no outgoing sink (`send-remote-write`, `send-loki-logs`,
     # `send-otlp`, `send-traces`, or `cloud-config`) is wired. The sink is the consumer's
@@ -237,6 +239,8 @@ test-cos-existing:
         --query='status=="active"' --timeout=300s
 
     just apply-with-overlay "test/terraform_test_local_executor.tfvars" "test/terraform_cos_existing.tfvars"
+
+    just configure-fernet-key
 
     just wait-for-active otel-collector
     juju wait-for unit otel-collector/0 --model airflow-test \

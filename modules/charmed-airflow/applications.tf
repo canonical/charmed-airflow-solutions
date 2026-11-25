@@ -1,6 +1,6 @@
 module "postgresql" {
-  # rev742 is a revision for postgresql-k8s 16/edge.
-  source             = "git::https://github.com/canonical/postgresql-k8s-operator//terraform?ref=rev742"
+  # rev977 is the latest charm revision for postgresql-k8s 16/edge.
+  source             = "git::https://github.com/canonical/postgresql-k8s-operator//terraform?ref=rev977"
   juju_model         = var.model_uuid
   app_name           = var.postgresql.app_name
   channel            = var.postgresql.channel
@@ -28,7 +28,7 @@ resource "juju_application" "pgbouncer" {
 }
 
 module "airflow_coordinator" {
-  source     = "git::https://github.com/canonical/airflow-coordinator-k8s-operator//terraform?ref=airflow-coordinator-rev21"
+  source     = "git::https://github.com/canonical/airflow-coordinator-k8s-operator//terraform?ref=track/3.1"
   model_uuid = var.model_uuid
   app_name   = var.airflow_coordinator.app_name
   channel    = var.airflow_coordinator.channel
