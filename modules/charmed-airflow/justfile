@@ -222,7 +222,7 @@ test-cos:
     just goss-cos
 
 # Full test for COS with a pre-deployed opentelemetry-collector-k8s
-test-cos-existing:
+test-cos-existing: (initialize)
     #!/usr/bin/bash
     set -euxo pipefail
 
@@ -234,7 +234,15 @@ test-cos-existing:
 
     just validate_test_tfvars "test/terraform_test_local_executor.tfvars"
 
-    juju deploy opentelemetry-collector-k8s otel-collector --channel=0.130/stable --trust -m airflow-test
+    for attempt in 1 2 3 4 5; do
+        if juju deploy opentelemetry-collector-k8s otel-collector --channel=0.130/stable --trust -m airflow-test; then
+            break
+        fi
+        if [ "${attempt}" -eq 5 ]; then
+            exit 1
+        fi
+        sleep 10
+    done
     juju wait-for application otel-collector --model airflow-test \
         --query='status=="active"' --timeout=300s
 
