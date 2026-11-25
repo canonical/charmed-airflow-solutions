@@ -88,11 +88,45 @@ destroy variables_file:
     fi
     terraform destroy -auto-approve -var-file="${variables_file}" || true
     just destroy-model
+    just clean_tfvars "${variables_file}"
 
-# Wait for all applications to be active
-wait-for-active:
+# Apply with a base variables file and an overlay variables file
+apply-with-overlay base_file overlay_file: (initialize)
+    terraform apply -auto-approve -var-file="${base_file}" -var-file="${overlay_file}"
+
+# Destroy with a base and an overlay variables file
+destroy-with-overlay base_file overlay_file:
+    #!/usr/bin/bash
+    set -euxo pipefail
+    terraform destroy -auto-approve -var-file="${base_file}" -var-file="${overlay_file}" || true
+    just destroy-model
+    just clean_tfvars "${base_file}"
+
+# Port-forward otel-collector and run goss COS tests
+[private]
+goss-cos:
+    #!/usr/bin/bash
+    set -euxo pipefail
+    kubectl port-forward -n airflow-test pod/otel-collector-0 13133:13133 8888:8888 &
+    PF_PID=$!
+    trap 'kill ${PF_PID} 2>/dev/null || true' EXIT
+    GOSS_FILE=test/goss-cos.yaml goss validate --retry-timeout 30s
+
+# Wait for all applications in airflow-test to reach active status.
+# Pass application names as positional args to exclude them from the active check
+# (e.g. otel-collector, which is expected to stay blocked until the consumer wires their COS).
+wait-for-active *excluded:
     #!/usr/bin/env bash
     set -euxo pipefail
+
+    query='forEach(applications, app => app.status == "active")'
+    if [ -n "{{ excluded }}" ]; then
+        clause=""
+        for app in {{ excluded }}; do
+            clause="${clause:+$clause || }app.name == \"$app\""
+        done
+        query="forEach(applications, app => ($clause) || app.status == \"active\")"
+    fi
 
     timeout=1200
     elapsed=0
@@ -102,13 +136,13 @@ wait-for-active:
         # Sometimes it gets stuck at waiting even if applications in the model are active
         # if we just call it directly. This is likely a bug on juju's end.
         if juju wait-for model airflow-test \
-            --query='forEach(applications, app => app.status == "active")' \
+            --query="$query" \
             --timeout=${interval}s 2>/dev/null; then
             exit 0
         fi
         elapsed=$((elapsed + interval))
     done
-    echo "Timed out waiting for model to become active"
+    echo "Timed out waiting for applications (excluding: {{ excluded }}) to become active"
     exit 1
 
 # Create a Kubernetes namespace if it doesn't exist
@@ -139,6 +173,8 @@ _test tfvars:
 
     just add-model
 
+    rm -f terraform.tfstate terraform.tfstate.backup
+
     just validate_test_tfvars "{{ tfvars }}"
 
     just apply "{{ tfvars }}"
@@ -154,3 +190,71 @@ test: (_test "test/terraform_test_local_executor.tfvars")
 
 # Full test with kubernetes executor
 test-k8s-executor: (create-namespace "airflow-executor-workers") (_test "test/terraform_test_kubernetes_executor.tfvars")
+
+# Full test for COS with module-deployed opentelemetry-collector-k8s
+test-cos:
+    #!/usr/bin/bash
+    set -euxo pipefail
+
+    trap 'just destroy-with-overlay "test/terraform_test_local_executor.tfvars" "test/terraform_cos.tfvars"' EXIT
+
+    just add-model
+
+    rm -f terraform.tfstate terraform.tfstate.backup
+
+    just validate_test_tfvars "test/terraform_test_local_executor.tfvars"
+
+    just apply-with-overlay "test/terraform_test_local_executor.tfvars" "test/terraform_cos.tfvars"
+
+    just configure-fernet-key
+
+    # otel-collector is expected to end up blocked on the mandatory-relation pair check
+    # when `receive-otlp` has peers but no outgoing sink (`send-remote-write`, `send-loki-logs`,
+    # `send-otlp`, `send-traces`, or `cloud-config`) is wired. The sink is the consumer's
+    # responsibility, so we exclude otel-collector from wait-for-active and validate its
+    # workload health via goss-cos.
+    just wait-for-active otel-collector
+    juju wait-for unit otel-collector/0 --model airflow-test \
+        --query='workload-status=="blocked"' \
+        --timeout=300s
+
+    just kgoss-checks
+    just goss-cos
+
+# Full test for COS with a pre-deployed opentelemetry-collector-k8s
+test-cos-existing: (initialize)
+    #!/usr/bin/bash
+    set -euxo pipefail
+
+    trap 'just destroy-with-overlay "test/terraform_test_local_executor.tfvars" "test/terraform_cos_existing.tfvars"' EXIT
+
+    just add-model
+
+    rm -f terraform.tfstate terraform.tfstate.backup
+
+    just validate_test_tfvars "test/terraform_test_local_executor.tfvars"
+
+    for attempt in 1 2 3 4 5; do
+        if juju deploy opentelemetry-collector-k8s otel-collector --channel=0.130/stable --trust -m airflow-test; then
+            break
+        fi
+        if [ "${attempt}" -eq 5 ]; then
+            exit 1
+        fi
+        sleep 10
+    done
+    juju wait-for application otel-collector --model airflow-test \
+        --query='status=="active"' --timeout=300s
+
+    just apply-with-overlay "test/terraform_test_local_executor.tfvars" "test/terraform_cos_existing.tfvars"
+
+    just configure-fernet-key
+
+    just wait-for-active otel-collector
+    juju wait-for unit otel-collector/0 --model airflow-test \
+        --query='workload-status=="blocked"' \
+        --timeout=300s
+
+    just kgoss-checks
+    just goss-cos
+

@@ -13,3 +13,12 @@ output "applications" {
     }
   }
 }
+
+# OpenTelemetry Collector (only if cos_configuration = true)
+output "otel_collector_k8s" {
+  description = "opentelemetry-collector-k8s application name when COS is enabled."
+  value = var.cos_configuration ? {
+    app_name = local.otel_collector_resolved_name
+  } : {}
+}
+

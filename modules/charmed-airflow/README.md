@@ -19,6 +19,7 @@ This module deploys the following components and their relations:
 | `airflow-triggerer` | `airflow-triggerer-k8s` | Runs async triggers for deferrable operators. |
 | `airflow-dag-processor` | `airflow-dag-processor-k8s` | Parses DAGs and serializes them to the DB. |
 | `airflow-executor` (optional) | Executor-specific charm (e.g. `airflow-kubernetes-executor-k8s`) | Configures the Airflow executor type and related settings. Deployed only when `executor` is set. |
+| `otel-collector` (optional) | `opentelemetry-collector-k8s` | Observability integration for COS. Deployed when `cos_configuration = true` and `existing_otel_collector_name` is not set. |
 
 ---
 
@@ -38,6 +39,8 @@ This module deploys the following components and their relations:
 | `airflow_scheduler` | object | Configuration for the `airflow-scheduler-k8s` charm module | false |
 | `airflow_triggerer` | object | Configuration for the `airflow-triggerer-k8s` charm module | false |
 | `airflow_dag_processor` | object | Configuration for the `airflow-dag-processor-k8s` charm module | false |
+| `cos_configuration` | bool | Enables COS integration by deploying and relating `opentelemetry-collector-k8s` | false |
+| `existing_otel_collector_name` | string | Name of an existing `opentelemetry-collector-k8s` deployment to reuse (used only if `cos_configuration = true`) | false |
 
 
 Each Airflow charm input object supports:
@@ -69,6 +72,7 @@ The PostgreSQL input object supports:
 | Name | Description |
 | --- | --- |
 | `applications` | Map containing all charm modules that make up the Charmed Airflow deployment |
+| `otel_collector_k8s` | Map containing the deployed or reused OpenTelemetry Collector application name when COS is enabled |
 
 ---
 
@@ -85,6 +89,7 @@ The following relations are automatically established:
 | `airflow-triggerer ↔ airflow-coordinator` | Triggerer registration and configuration. |
 | `airflow-dag-processor ↔ airflow-coordinator` | DAG processor registration and configuration. |
 | `airflow-executor ↔ airflow-coordinator` (when `executor` is set) | Executor configuration exchange. The coordinator sends global Airflow config to the executor, and the executor sends back executor-specific settings (e.g. pod templates). |
+| `airflow-coordinator ↔ otel-collector` (when `cos_configuration = true`) | OTLP telemetry endpoint and alert rules exchange (`send-otlp` ↔ `receive-otlp`) and Grafana dashboards export (`grafana-dashboards` ↔ `grafana-dashboards-consumer`). |
 
 ---
 
@@ -124,6 +129,24 @@ The `airflow_kubernetes_executor` input object supports the same fields as other
 | `namespace` | string | yes | Kubernetes namespace where worker Pods will be scheduled. Must already exist. |
 | `base_image` | string | yes | OCI image for worker Pods. For Local DAG bundle sources, this image must contain the DAGs. |
 | `pod_name` | string | no | Base name for worker Pods (default: `airflow-worker`). |
+
+### COS Configuration
+
+#### Enable COS Integration
+
+To enable COS integration (deploy `opentelemetry-collector-k8s` from `0.130/stable` and relate it to `airflow-coordinator`):
+
+```bash
+terraform apply -var cos_configuration=true
+```
+
+#### Use an Existing OpenTelemetry Collector
+
+If an existing OpenTelemetry Collector is already deployed in the same model, reuse it instead of deploying a new one:
+
+```bash
+terraform apply -var cos_configuration=true -var existing_otel_collector_name="otel-collector"
+```
 
 ### Running
 
@@ -165,3 +188,5 @@ just destroy test/terraform_test_local_executor.tfvars
 - https://github.com/canonical/airflow-core-operators
 - https://github.com/canonical/airflow-kubernetes-executor-k8s-operator
 - https://github.com/canonical/postgresql-k8s-operator
+- https://github.com/canonical/opentelemetry-collector-k8s-operator
+
