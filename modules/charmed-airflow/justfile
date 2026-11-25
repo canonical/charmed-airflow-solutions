@@ -120,6 +120,15 @@ create-namespace ns:
     # Ensure idempotency
     kubectl create namespace "{{ ns }}" --dry-run=client -o yaml | kubectl apply -f -
 
+# Create and grant the fernet-key secret to airflow-coordinator
+[private]
+configure-fernet-key:
+    #!/usr/bin/bash
+    set -euo pipefail
+    SECRET_URI=$(juju add-secret -m airflow-test fernet-key-secret "fernet-key=$(openssl rand -base64 32 | tr '+/' '-_')")
+    juju grant-secret -m airflow-test fernet-key-secret airflow-coordinator
+    juju config -m airflow-test airflow-coordinator fernet_key_secret="${SECRET_URI}"
+
 # Generic test (create model, apply, wait, kgoss checks, cleanup)
 [private]
 _test tfvars:
@@ -133,6 +142,8 @@ _test tfvars:
     just validate_test_tfvars "{{ tfvars }}"
 
     just apply "{{ tfvars }}"
+
+    just configure-fernet-key
 
     just wait-for-active
 
